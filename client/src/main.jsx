@@ -4,9 +4,14 @@ import './index.css'
 import App from './App.jsx'
 import { Provider } from 'react-redux'
 import { store } from './redux/store.js'
+import { ThemeProvider } from '@mui/material/styles'
+import { muiTheme } from './muiTheme'
+
 createRoot(document.getElementById('root')).render(
  <Provider store={store}>
-   <App />
+   <ThemeProvider theme={muiTheme}>
+     <App />
+   </ThemeProvider>
  </Provider>
   
 )

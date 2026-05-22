@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import {BrowserRouter, Navigate, Route, Routes} from "react-router-dom"
 import Home from './pages/Home'
 import useGetCurrentUser from './hooks/useGetCurrentUser'
@@ -13,6 +13,13 @@ export const serverUrl="http://localhost:8000"
 function App() {
   useGetCurrentUser()
   const {userData}=useSelector(state=>state.user)
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("genweb-theme") || "light"
+    document.documentElement.classList.remove("light", "dark")
+    document.documentElement.classList.add(savedTheme === "light" ? "light" : "dark")
+  }, [])
+
   return (
    <BrowserRouter>
    <Routes>

@@ -22,7 +22,7 @@ function LiveSite() {
 
 if(error){
     return (
-        <div className='h-screen flex items-center justify-center bg-black text-white'>
+        <div className='h-screen flex items-center justify-center bg-[--color-bg-base] text-[--color-text-primary]'>
             {error}
         </div>
     )
