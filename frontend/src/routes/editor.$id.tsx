@@ -13,11 +13,12 @@ import { useTheme } from "@/lib/theme-store";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+
 export const Route = createFileRoute("/editor/$id")({
   head: ({ params }) => ({ meta: [{ title: `Editor — Lumen` }, { name: "description", content: "Lumen editor workspace." }] }),
   loader: ({ params }) => {
-    const p = useProjects.getState().projects.find((x) => x.id === params.id);
-    if (!p) throw notFound();
     return { id: params.id };
   },
   component: EditorPage,
@@ -36,34 +37,40 @@ type Msg = { role: "user" | "ai"; text: string };
 
 function EditorPage() {
   const { id } = Route.useParams();
-  const project = useProjects((s) => s.projects.find((p) => p.id === id))!;
-  const update = useProjects((s) => s.update);
   const { theme } = useTheme();
   const navigate = useNavigate();
 
-  const fileNames = useMemo(() => Object.keys(project.files), [project.id]);
+  const { data: project, isLoading } = useQuery({
+    queryKey: ["website", id],
+    queryFn: async () => {
+      const res = await api.get(`/api/website/get-by-id/${id}`);
+      return res.data;
+    }
+  });
+
+  const fileNames = ["index.html"];
   const [active, setActive] = useState(fileNames[0]);
-  const [files, setFiles] = useState(project.files);
+  const [files, setFiles] = useState<Record<string, string>>({ "index.html": "" });
   const [device, setDevice] = useState<Device>("desktop");
   const [showCode, setShowCode] = useState(true);
   const [showConsole, setShowConsole] = useState(false);
   const [showChat, setShowChat] = useState(true);
   const [previewKey, setPreviewKey] = useState(0);
   const [logs, setLogs] = useState<{ kind: "log" | "error"; text: string; t: number }[]>([
-    { kind: "log", t: Date.now(), text: `Preview started for "${project.name}"` },
+    { kind: "log", t: Date.now(), text: `Preview started` },
   ]);
   const [menu, setMenu] = useState<HTMLElement | null>(null);
-  const [messages, setMessages] = useState<Msg[]>([
-    { role: "ai", text: `Hi — I generated "${project.name}" based on your prompt. Tell me what to change.` },
-  ]);
+  const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
-  const [thinking, setThinking] = useState(false);
 
-  // autosave
   useEffect(() => {
-    const t = setTimeout(() => update(id, files), 600);
-    return () => clearTimeout(t);
-  }, [files, id, update]);
+    if (project) {
+      setFiles({ "index.html": project.latestCode || "" });
+      setMessages(project.conversation?.map((c: any) => ({ role: c.role, text: c.content })) || []);
+    }
+  }, [project]);
+
+  // removed autosave since backend saves it during update
 
   // listen to iframe logs
   useEffect(() => {
@@ -78,19 +85,24 @@ function EditorPage() {
 
   const srcDoc = useMemo(() => buildPreview(files), [files, previewKey]);
 
+  const { mutate: updateWebsite, isPending: thinking } = useMutation({
+    mutationFn: async (text: string) => {
+      const res = await api.post(`/api/website/update/${id}`, { prompt: text });
+      return res.data;
+    },
+    onSuccess: (data) => {
+      setFiles({ "index.html": data.code || "" });
+      setMessages((m) => [...m, { role: "ai", text: data.message || "Updated successfully." }]);
+    },
+    onError: () => toast.error("Update failed")
+  });
+
   const send = () => {
     const text = input.trim();
-    if (!text) return;
+    if (!text || thinking) return;
     setMessages((m) => [...m, { role: "user", text }]);
     setInput("");
-    setThinking(true);
-    setTimeout(() => {
-      setMessages((m) => [
-        ...m,
-        { role: "ai", text: mockReply(text) },
-      ]);
-      setThinking(false);
-    }, 900 + Math.random() * 600);
+    updateWebsite(text);
   };
 
   const width = device === "desktop" ? "100%" : device === "tablet" ? 768 : 390;
@@ -104,8 +116,8 @@ function EditorPage() {
           <Tooltip title="Back"><IconButton size="small" onClick={() => navigate({ to: "/dashboard" })}><ChevronLeft size={16} /></IconButton></Tooltip>
           <Link to="/" className="hidden sm:block"><Logo size={18} /></Link>
           <div className="h-5 w-px bg-border mx-1 hidden sm:block" />
-          <div className="text-sm font-medium truncate max-w-[180px]">{project.name}</div>
-          <span className="text-xs text-muted-foreground hidden md:inline">· autosaved</span>
+          <div className="text-sm font-medium truncate max-w-[180px]">{project?.title || project?.name || "Loading..."}</div>
+          <span className="text-xs text-muted-foreground hidden md:inline"></span>
         </div>
         <div className="flex items-center gap-1">
           <Toggle on={showChat} onClick={() => setShowChat(!showChat)} icon={MessageSquare} label="Chat" />
@@ -127,9 +139,8 @@ function EditorPage() {
           <Button size="small" variant="contained" startIcon={<Play size={14} />} sx={{ background: "linear-gradient(135deg,#6366f1,#a855f7)" }} onClick={() => toast.success("Deploy started")}>Deploy</Button>
           <IconButton size="small" onClick={(e) => setMenu(e.currentTarget)}><MoreHorizontal size={16} /></IconButton>
           <Menu anchorEl={menu} open={!!menu} onClose={() => setMenu(null)}>
-            <MenuItem onClick={() => { downloadZip(project.name, files); setMenu(null); }}><Download size={14} style={{ marginRight: 8 }} /> Download ZIP</MenuItem>
+            <MenuItem onClick={() => { downloadZip(project?.title || "project", files); setMenu(null); }}><Download size={14} style={{ marginRight: 8 }} /> Download ZIP</MenuItem>
             <MenuItem onClick={() => { navigator.clipboard?.writeText(files[active] ?? ""); toast.success("File copied"); setMenu(null); }}>Copy file</MenuItem>
-            <MenuItem onClick={() => { setFiles(project.files); toast.success("Reverted"); setMenu(null); }}>Revert changes</MenuItem>
           </Menu>
         </div>
       </header>

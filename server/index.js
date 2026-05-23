@@ -10,23 +10,23 @@ import websiteRouter from "./routes/website.routes.js"
 import billingRouter from "./routes/billing.routes.js"
 import { stripeWebhook } from "./controllers/stripeWebhook.controller.js"
 
-const app=express()
+const app = express()
 
-app.post("/api/stripe/webhook",express.raw({type:"application/json"}),stripeWebhook)
-const port=process.env.PORT || 5000
+app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), stripeWebhook)
+const port = process.env.PORT || 5000
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
-    origin:"http://localhost:5173",
+    origin: ["http://localhost:5173", "http://localhost:8080", "http://localhost:5174"],
     credentials:true
 }))
-app.use("/api/auth",authRouter)
-app.use("/api/user",userRouter)
-app.use("/api/website",websiteRouter)
-app.use("/api/billing",billingRouter)
+app.use("/api/auth", authRouter)
+app.use("/api/user", userRouter)
+app.use("/api/website", websiteRouter)
+app.use("/api/billing", billingRouter)
 
 
-app.listen(port,()=>{
+app.listen(port, () => {
     console.log("server started")
     connectDb()
 })

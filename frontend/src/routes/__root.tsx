@@ -7,6 +7,9 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { api } from "@/lib/api";
+import { useUser } from "@/lib/user-store";
 
 import appCss from "../styles.css?url";
 import { MuiProviders } from "@/components/mui-providers";
@@ -114,6 +117,23 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const setUser = useUser((state) => state.setUser);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await api.get('/api/user/me');
+        if (response.data && response.data._id) {
+          setUser(response.data);
+        } else {
+          setUser(null);
+        }
+      } catch (err) {
+        setUser(null);
+      }
+    };
+    fetchUser();
+  }, [setUser]);
 
   return (
     <QueryClientProvider client={queryClient}>

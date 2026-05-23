@@ -112,7 +112,7 @@ function Landing() {
             transition={{ duration: 0.6, delay: 0.18 }}
             className="mt-10 mx-auto max-w-2xl"
           >
-            <div className="glass rounded-2xl p-2 shadow-elegant">
+            <div id="prompt-section" className="glass rounded-2xl p-2 shadow-elegant">
               <div className="flex items-center gap-2 rounded-xl bg-background/60 px-4 py-3">
                 <Wand2 size={18} className="text-muted-foreground shrink-0" />
                 <input
@@ -136,7 +136,7 @@ function Landing() {
               {SUGGESTIONS.map((s) => (
                 <button
                   key={s}
-                  onClick={() => submit(s)}
+                  onClick={() => setPrompt(s)}
                   className="text-xs px-3 py-1.5 rounded-full border bg-card/50 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
                 >
                   {s}
@@ -249,7 +249,7 @@ function Landing() {
       </section>
 
       {/* PRICING */}
-      <section className="bg-surface border-y">
+      <section id="pricing-section" className="bg-surface border-y">
         <div className="mx-auto max-w-7xl px-6 py-24">
           <SectionHeader eyebrow="Pricing" title="Simple, transparent pricing." subtitle="Start free. Upgrade when you ship." />
           <div className="mt-14 grid gap-5 md:grid-cols-3">
@@ -269,7 +269,7 @@ function Landing() {
                   {p.price !== "Custom" && <span className="text-muted-foreground text-sm">/mo</span>}
                 </div>
                 <p className="mt-3 text-sm text-muted-foreground">{p.desc}</p>
-                <Link to="/signup">
+                <Link to="/pricing">
                   <Button fullWidth variant={p.featured ? "contained" : "outlined"} sx={p.featured ? { mt: 3, background: "linear-gradient(135deg,#6366f1,#a855f7)" } : { mt: 3 }}>
                     Get started
                   </Button>
@@ -301,7 +301,7 @@ function Landing() {
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Ready to build something <span className="text-gradient">beautiful</span>?</h2>
             <p className="mt-4 text-muted-foreground max-w-xl mx-auto">Start with a prompt. Ship in minutes.</p>
             <div className="mt-8 flex flex-wrap gap-3 justify-center">
-              <Link to="/signup"><Button variant="contained" size="large" sx={{ background: "linear-gradient(135deg,#6366f1,#a855f7)" }}>Start free</Button></Link>
+              <a href="#prompt-section"><Button variant="contained" size="large" sx={{ background: "linear-gradient(135deg,#6366f1,#a855f7)" }}>Start free</Button></a>
               <Link to="/dashboard"><Button variant="outlined" size="large" startIcon={<Github size={16} />}>Open dashboard</Button></Link>
             </div>
           </div>

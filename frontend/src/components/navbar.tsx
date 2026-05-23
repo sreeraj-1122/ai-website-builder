@@ -5,6 +5,8 @@ import { ThemeToggle } from "./theme-toggle";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useUser } from "@/lib/user-store";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
 
 export function Logo({ size = 22 }: { size?: number }) {
   return (
@@ -85,13 +87,35 @@ function ProfileMenu({ compact = false }: { compact?: boolean }) {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
   const { user, signOut } = useUser();
   const open = Boolean(anchor);
+
+  const handleSignOut = async () => {
+    try {
+      await api.get("/api/auth/logout");
+      signOut();
+      setAnchor(null);
+      toast.success("Signed out successfully");
+    } catch (e) {
+      toast.error("Failed to sign out");
+    }
+  };
+
+  if (!user) {
+    return (
+      <Link to="/login">
+        <Button variant="contained" size={compact ? "medium" : "small"} fullWidth={compact} sx={{ background: "linear-gradient(135deg,#8b5cf6,#06b6d4)", borderRadius: 8 }}>
+          Sign In
+        </Button>
+      </Link>
+    );
+  }
+
   return (
     <>
       <button
         onClick={(e) => setAnchor(e.currentTarget)}
         className={`flex items-center gap-2 rounded-full border bg-card/60 backdrop-blur hover:bg-muted transition-colors ${compact ? "w-full justify-start p-2" : "pl-1 pr-2 py-1"}`}
       >
-        <Avatar src={user.avatar} sx={{ width: 30, height: 30 }} />
+        <Avatar src={user.image || user.avatar} sx={{ width: 30, height: 30 }} />
         {compact && (
           <div className="text-left">
             <div className="text-sm font-medium">{user.name}</div>
@@ -122,7 +146,7 @@ function ProfileMenu({ compact = false }: { compact?: boolean }) {
         }}
       >
         <div className="p-4 flex items-center gap-3 border-b">
-          <Avatar src={user.avatar} sx={{ width: 44, height: 44 }} />
+          <Avatar src={user.image || user.avatar} sx={{ width: 44, height: 44 }} />
           <div className="min-w-0 flex-1">
             <div className="font-semibold text-sm truncate">{user.name}</div>
             <div className="text-xs text-muted-foreground truncate">{user.email}</div>
@@ -133,13 +157,13 @@ function ProfileMenu({ compact = false }: { compact?: boolean }) {
             <Zap size={13} className="text-[color:var(--accent)]" />
             Credits
           </div>
-          <span className="text-sm font-semibold tabular-nums">{user.credits}</span>
+          <span className="text-sm font-semibold tabular-nums">{user.credits || 0}</span>
         </div>
         <div className="px-4 pb-3 flex items-center justify-between">
           <span className="text-xs text-muted-foreground">Plan</span>
           <Chip
             size="small"
-            label={user.plan}
+            label={user.planType || user.plan || "Free"}
             sx={{
               height: 20,
               fontSize: 11,
@@ -161,7 +185,7 @@ function ProfileMenu({ compact = false }: { compact?: boolean }) {
         </MenuItem>
         <Divider />
         <MenuItem
-          onClick={() => { signOut(); setAnchor(null); }}
+          onClick={handleSignOut}
           sx={{ gap: 1.2, fontSize: 14, color: "var(--destructive)" }}
         >
           <LogOut size={16} /> Log out
