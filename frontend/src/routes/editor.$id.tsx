@@ -1,5 +1,4 @@
 import { createFileRoute, Link, useNavigate, notFound } from "@tanstack/react-router";
-import { useProjects } from "@/lib/projects-store";
 import { Button, IconButton, Tooltip, Menu, MenuItem } from "@mui/material";
 import { Logo } from "@/components/navbar";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -17,7 +16,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
 export const Route = createFileRoute("/editor/$id")({
-  head: ({ params }) => ({ meta: [{ title: `Editor — Lumen` }, { name: "description", content: "Lumen editor workspace." }] }),
+  head: ({ params }) => ({ meta: [{ title: `Editor — GenWeb.ai` }, { name: "description", content: "GenWeb.ai editor workspace." }] }),
   loader: ({ params }) => {
     return { id: params.id };
   },
@@ -52,7 +51,7 @@ function EditorPage() {
   const [active, setActive] = useState(fileNames[0]);
   const [files, setFiles] = useState<Record<string, string>>({ "index.html": "" });
   const [device, setDevice] = useState<Device>("desktop");
-  const [showCode, setShowCode] = useState(true);
+  const [showCode, setShowCode] = useState(false);
   const [showConsole, setShowConsole] = useState(false);
   const [showChat, setShowChat] = useState(true);
   const [previewKey, setPreviewKey] = useState(0);
@@ -105,7 +104,7 @@ function EditorPage() {
     updateWebsite(text);
   };
 
-  const width = device === "desktop" ? "100%" : device === "tablet" ? 768 : 390;
+  const width = device === "desktop" ? "95vw" : device === "tablet" ? 768 : 390;
   const lang = active.endsWith(".html") ? "html" : active.endsWith(".css") ? "css" : "javascript";
 
   return (

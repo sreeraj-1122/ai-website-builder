@@ -5,7 +5,7 @@ import { useTheme } from "@/lib/theme-store";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/settings")({
-  head: () => ({ meta: [{ title: "Settings — Lumen" }, { name: "description", content: "Manage your account preferences." }] }),
+  head: () => ({ meta: [{ title: "Settings — GenWeb.ai" }, { name: "description", content: "Manage your account preferences." }] }),
   component: Settings,
 });
 
@@ -19,7 +19,7 @@ function Settings() {
           <p className="text-muted-foreground mt-1">Preferences and account.</p>
         </div>
 
-        <Card title="Appearance" desc="Choose how Lumen looks to you.">
+        <Card title="Appearance" desc="Choose how GenWeb.ai looks to you.">
           <div className="flex items-center justify-between">
             <div className="text-sm">Dark mode</div>
             <Switch checked={theme === "dark"} onChange={(_, v) => set(v ? "dark" : "light")} />
@@ -27,7 +27,7 @@ function Settings() {
         </Card>
 
         <Card title="Workspace" desc="Workspace-level defaults.">
-          <TextField fullWidth size="small" label="Workspace name" defaultValue="Lumen Labs" sx={{ mb: 2 }} />
+          <TextField fullWidth size="small" label="Workspace name" defaultValue="GenWeb.ai Labs" sx={{ mb: 2 }} />
           <TextField fullWidth size="small" label="Default project framework" defaultValue="React + Vite" />
         </Card>
 

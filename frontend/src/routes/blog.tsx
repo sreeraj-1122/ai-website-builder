@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { motion } from "framer-motion";
@@ -22,8 +22,13 @@ export const Route = createFileRoute("/blog")({
 });
 
 function BlogIndex() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
   const [cat, setCat] = useState<string>("All");
   const [q, setQ] = useState("");
+
+  if (pathname !== "/blog") {
+    return <Outlet />;
+  }
 
   const featured = BLOG_POSTS.find((p) => p.featured) ?? BLOG_POSTS[0];
 
@@ -48,7 +53,7 @@ function BlogIndex() {
               <h1 className="mt-5 text-4xl md:text-6xl font-bold tracking-tight">Ideas on shipping with <span className="text-gradient">AI.</span></h1>
               <p className="mt-4 text-muted-foreground max-w-xl">Guides, tutorials, and field notes from the frontier of AI-generated web design.</p>
             </div>
-            <Link to="/blog/new">
+            <Link to="/blog/new" >
               <Button variant="outlined" startIcon={<PenLine size={16} />}>New post</Button>
             </Link>
           </div>

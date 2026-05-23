@@ -10,7 +10,7 @@ import { auth, provider } from "@/lib/firebase";
 import { api } from "@/lib/api";
 import { useUser } from "@/lib/user-store";
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Sign in — Lumen" }, { name: "description", content: "Sign in to your Lumen account." }] }),
+  head: () => ({ meta: [{ title: "Sign in — GenWeb.ai" }, { name: "description", content: "Sign in to your GenWeb.ai account." }] }),
   component: Login,
 });
 
@@ -22,11 +22,11 @@ function Login() {
     <form onSubmit={(e) => { e.preventDefault(); toast.success("Signed in"); navigate({ to: "/dashboard" }); }} className="space-y-3">
       <GoogleButton />
       <Divider sx={{ my: 1, fontSize: 12 }}>OR</Divider>
-      <TextField fullWidth label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required size="small" />
+      {/* <TextField fullWidth label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required size="small" />
       <TextField fullWidth label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required size="small" />
       <Button type="submit" variant="contained" fullWidth size="large" sx={{ background: "linear-gradient(135deg,#6366f1,#a855f7)", mt: 1 }}>
         Sign in
-      </Button>
+      </Button> */}
     </form>
     <p className="text-sm text-center text-muted-foreground mt-6">
       No account? <Link to="/signup" className="text-foreground hover:underline">Create one</Link>
@@ -44,9 +44,9 @@ export function AuthShell({ title, subtitle, children }: { title: string; subtit
           <Link to="/"><Logo /></Link>
           <div>
             <h2 className="text-4xl font-bold tracking-tight leading-tight">Design at the <span className="text-gradient">speed of thought.</span></h2>
-            <p className="mt-4 text-muted-foreground max-w-md">Lumen turns prompts into beautiful, production-ready websites — with live preview and editable code.</p>
+            <p className="mt-4 text-muted-foreground max-w-md">GenWeb.ai turns prompts into beautiful, production-ready websites — with live preview and editable code.</p>
           </div>
-          <div className="text-xs text-muted-foreground">© Lumen Labs</div>
+          <div className="text-xs text-muted-foreground">© GenWeb.ai Labs</div>
         </div>
       </div>
       <div className="flex flex-col">

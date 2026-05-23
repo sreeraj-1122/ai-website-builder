@@ -5,7 +5,8 @@ import { Button, Chip, InputBase } from "@mui/material";
 import { motion } from "framer-motion";
 import { Sparkles, ArrowRight, Search, TrendingUp, Eye, Clock } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useProjects } from "@/lib/projects-store";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
 import { TEMPLATES, TEMPLATE_CATEGORIES, type Template } from "@/data/templates";
 
 export const Route = createFileRoute("/templates")({
@@ -123,11 +124,23 @@ function TemplatesPage() {
 }
 
 function TemplateCard({ t, i, highlight = false }: { t: Template; i: number; highlight?: boolean }) {
-  const create = useProjects((s) => s.create);
   const navigate = useNavigate();
-  const use = () => {
-    const p = create(t.prompt, t.name);
-    navigate({ to: "/editor/$id", params: { id: p.id } });
+  const [isGenerating, setIsGenerating] = useState(false);
+  const use = async () => {
+    if (isGenerating) return;
+
+    setIsGenerating(true);
+    try {
+      const res = await api.post("/api/website/generate", { prompt: t.prompt });
+      const websiteId = res.data.website?._id || res.data.websiteId;
+      if (websiteId) {
+        navigate({ to: "/editor/$id", params: { id: websiteId } });
+      }
+    } catch {
+      toast.error("Generation failed");
+    } finally {
+      setIsGenerating(false);
+    }
   };
   return (
     <motion.div
@@ -177,17 +190,18 @@ function TemplateCard({ t, i, highlight = false }: { t: Template; i: number; hig
             ))}
           </div>
           <div className="mt-5 flex items-center gap-2">
-            <Button size="small" variant="outlined" sx={{ flex: 1 }} startIcon={<Eye size={14} />}>
+            <Button disabled size="small" variant="outlined" sx={{ flex: 1 }} startIcon={<Eye size={14} />}>
               Preview
             </Button>
             <Button
               onClick={use}
+              disabled={isGenerating}
               size="small"
               variant="contained"
               sx={{ flex: 1, background: "linear-gradient(135deg,#8b5cf6,#06b6d4)" }}
               endIcon={<ArrowRight size={14} />}
             >
-              Use
+              {isGenerating ? "Building" : "Use"}
             </Button>
           </div>
         </div>

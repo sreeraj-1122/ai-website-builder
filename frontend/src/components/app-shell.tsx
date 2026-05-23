@@ -46,7 +46,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500 shrink-0" />
             <div className="min-w-0">
               <div className="text-sm font-medium truncate">Alex Rivera</div>
-              <div className="text-xs text-muted-foreground truncate">alex@lumen.app</div>
+              <div className="text-xs text-muted-foreground truncate">alex@genweb.ai</div>
             </div>
           </div>
           <Tooltip title="Sign out">

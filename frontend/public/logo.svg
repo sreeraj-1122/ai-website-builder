@@ -1,0 +1,12 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GenWeb.ai logo">
+  <rect width="96" height="96" rx="24" fill="url(#paint0_linear_1_1)"/>
+  <path d="M48 18L54.6 40.4L77 47L54.6 53.6L48 76L41.4 53.6L19 47L41.4 40.4L48 18Z" fill="white"/>
+  <path d="M69 15L71.8 24.2L81 27L71.8 29.8L69 39L66.2 29.8L57 27L66.2 24.2L69 15Z" fill="white" fill-opacity="0.88"/>
+  <path d="M27 61L29.5 69.5L38 72L29.5 74.5L27 83L24.5 74.5L16 72L24.5 69.5L27 61Z" fill="white" fill-opacity="0.72"/>
+  <defs>
+    <linearGradient id="paint0_linear_1_1" x1="10" y1="8" x2="88" y2="90" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8B5CF6"/>
+      <stop offset="1" stop-color="#06B6D4"/>
+    </linearGradient>
+  </defs>
+</svg>

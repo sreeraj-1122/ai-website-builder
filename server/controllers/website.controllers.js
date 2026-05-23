@@ -2,6 +2,7 @@ import { generateResponse } from "../config/openRouter.js";
 import User from "../models/user.model.js";
 import Website from "../models/website.model.js";
 import extractJson from "../utils/extractJson.js";
+import mongoose from "mongoose";
 
 const masterPrompt = `
 YOU ARE A PRINCIPAL FRONTEND ARCHITECT
@@ -219,6 +220,10 @@ export const generateWebsite = async (req, res) => {
 
 export const getWebsiteById = async (req, res) => {
     try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ message: "invalid website id" })
+        }
+
         const website = await Website.findOne({
             _id: req.params.id,
             user: req.user._id
@@ -370,5 +375,56 @@ export const getBySlug=async (req,res) => {
           return res.status(200).json(website)
     } catch (error) {
         return res.status(500).json({ message: `get by slug website error ${error}` })
+    }
+}
+
+export const renameWebsite = async (req, res) => {
+    try {
+        const { title } = req.body
+
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ message: "invalid website id" })
+        }
+
+        if (!title || !title.trim()) {
+            return res.status(400).json({ message: "title is required" })
+        }
+
+        const website = await Website.findOne({
+            _id: req.params.id,
+            user: req.user._id
+        })
+
+        if (!website) {
+            return res.status(400).json({ message: "website not found" })
+        }
+
+        website.title = title.trim().slice(0, 80)
+        await website.save()
+
+        return res.status(200).json(website)
+    } catch (error) {
+        return res.status(500).json({ message: `rename website error ${error}` })
+    }
+}
+
+export const deleteWebsite = async (req, res) => {
+    try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ message: "invalid website id" })
+        }
+
+        const website = await Website.findOneAndDelete({
+            _id: req.params.id,
+            user: req.user._id
+        })
+
+        if (!website) {
+            return res.status(400).json({ message: "website not found" })
+        }
+
+        return res.status(200).json({ message: "website deleted" })
+    } catch (error) {
+        return res.status(500).json({ message: `delete website error ${error}` })
     }
 }

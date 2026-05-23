@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Logo } from "./navbar";
-import { Github, Twitter, Linkedin } from "lucide-react";
+import { Github, Globe, Linkedin } from "lucide-react";
 
 export function Footer() {
   return (
@@ -12,9 +12,9 @@ export function Footer() {
             The fastest way to create websites with AI. From prompt to production-ready in seconds.
           </p>
           <div className="flex gap-2 pt-2 text-muted-foreground">
-            <a href="#" className="hover:text-foreground"><Github size={18} /></a>
-            <a href="#" className="hover:text-foreground"><Twitter size={18} /></a>
-            <a href="#" className="hover:text-foreground"><Linkedin size={18} /></a>
+            <a href="https://github.com/sreeraj-1122" className="hover:text-foreground"><Github size={18} /></a>
+            <a href="https://sreeraj.vercel.app/" className="hover:text-foreground"><Globe size={18} /></a>
+            <a href="https://www.linkedin.com/in/sreeraj-k1/" className="hover:text-foreground"><Linkedin size={18} /></a>
           </div>
         </div>
         {[

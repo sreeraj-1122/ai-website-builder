@@ -4,13 +4,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useUser } from "@/lib/user-store";
 import { Button, Menu, MenuItem, IconButton, TextField } from "@mui/material";
-import { Wand2, MoreHorizontal, Sparkles, ArrowRight, Plus, TrendingUp, Clock, Folder } from "lucide-react";
+import { Wand2, MoreHorizontal, Sparkles, ArrowRight, TrendingUp, Clock, Folder } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, MouseEvent } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — Lumen" }, { name: "description", content: "Your Lumen projects and recent activity." }] }),
+  head: () => ({ meta: [{ title: "Dashboard — GenWeb.ai" }, { name: "description", content: "Your GenWeb.ai projects and recent activity." }] }),
   component: Dashboard,
 });
 
@@ -35,9 +35,10 @@ function Dashboard() {
         return Array.isArray(res.data) ? res.data.map((w: any) => ({
           id: w._id,
           name: w.title || "Untitled site",
-          prompt: w.prompt || "No description",
+          prompt: w.conversation?.find((m: any) => m.role === "user")?.content || "No description",
           updatedAt: new Date(w.updatedAt).getTime(),
           thumbColor: "from-blue-500 to-indigo-500",
+          latestCode: w.latestCode || "",
         })) : [];
       } catch (err) {
         return [];
@@ -52,8 +53,9 @@ function Dashboard() {
     },
     onSuccess: (data) => {
       toast.success("Generated!");
-      if (data.website?._id) {
-        navigate({ to: "/editor/$id", params: { id: data.website._id } });
+      const websiteId = data.website?._id || data.websiteId;
+      if (websiteId) {
+        navigate({ to: "/editor/$id", params: { id: websiteId } });
       }
     },
     onError: () => toast.error("Generation failed"),
@@ -98,7 +100,7 @@ function Dashboard() {
           </motion.div>
           <div className="flex flex-wrap gap-2 mt-3">
             {SUGGESTIONS.map((s) => (
-              <button key={s} onClick={() => submit(s)} className="text-xs px-3 py-1.5 rounded-full border bg-card hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
+              <button key={s} onClick={() => setPrompt(s)} className="text-xs px-3 py-1.5 rounded-full border bg-card hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
                 <Sparkles size={12} className="inline mr-1.5 -mt-0.5" />{s}
               </button>
             ))}
@@ -116,14 +118,9 @@ function Dashboard() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold tracking-tight">Recent projects</h2>
-            <Button startIcon={<Plus size={16} />} size="small" onClick={() => submit("Untitled site")}>New</Button>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map((p) => <ProjectCard key={p.id} project={p} />)}
-            <Link to="/dashboard" className="border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center text-muted-foreground hover:text-foreground hover:border-[color:var(--accent)] hover:bg-muted/30 transition min-h-[220px]">
-              <Plus size={24} />
-              <div className="mt-2 text-sm font-medium">Start a new project</div>
-            </Link>
           </div>
         </section>
 
@@ -180,21 +177,50 @@ function ProjectCard({ project }: { project: any }) {
   const close = () => setAnchor(null);
 
   const rename = async (id: string, newName: string) => {
-    // Basic mock logic for now since we don't have a rename route
-    toast.success("Renamed (Local only)");
+    const title = newName.trim();
+    if (!title) {
+      setName(project.name);
+      setRenaming(false);
+      return;
+    }
+
+    try {
+      await api.patch(`/api/website/rename/${id}`, { title });
+      await queryClient.invalidateQueries({ queryKey: ["projects"] });
+      setRenaming(false);
+      toast.success("Renamed");
+    } catch {
+      setName(project.name);
+      toast.error("Rename failed");
+    }
   };
   
   const remove = async (id: string) => {
-    // Delete mock since route isn't defined explicitly in user description
-    toast.success("Deleted (Local only)");
+    try {
+      await api.delete(`/api/website/delete/${id}`);
+      await queryClient.invalidateQueries({ queryKey: ["projects"] });
+      toast.success("Deleted");
+    } catch {
+      toast.error("Delete failed");
+    }
   };
 
   return (
     <motion.div whileHover={{ y: -3 }} transition={{ duration: 0.2 }} className="group rounded-2xl border bg-card shadow-soft hover:shadow-elegant transition-all overflow-hidden">
       <Link to="/editor/$id" params={{ id: project.id }} className="block">
-        <div className={`h-32 bg-gradient-to-br ${project.thumbColor} relative`}>
-          <div className="absolute inset-0 grid-bg opacity-30" />
-          <div className="absolute bottom-3 left-3 text-white/90 text-xs font-medium tracking-wide">Preview</div>
+        <div className="h-32 bg-muted relative overflow-hidden border-b">
+          {project.latestCode ? (
+            <iframe
+              title={`${project.name} preview`}
+              srcDoc={project.latestCode}
+              sandbox="allow-scripts"
+              className="absolute left-0 top-0 h-[400px] w-[1280px] origin-top-left scale-[0.25] pointer-events-none bg-white"
+            />
+          ) : (
+            <div className={`absolute inset-0 bg-gradient-to-br ${project.thumbColor}`}>
+              <div className="absolute inset-0 grid-bg opacity-30" />
+            </div>
+          )}
         </div>
         <div className="p-4">
           <div className="flex items-start justify-between gap-2">
@@ -206,9 +232,10 @@ function ProjectCard({ project }: { project: any }) {
                 onClick={(e) => e.preventDefault()}
                 onKeyDown={(e) => {
                   e.stopPropagation();
-                  if (e.key === "Enter") { rename(project.id, name); setRenaming(false); toast.success("Renamed"); }
+                  if (e.key === "Enter") { e.preventDefault(); rename(project.id, name); }
                   if (e.key === "Escape") { setRenaming(false); setName(project.name); }
                 }}
+                onBlur={() => rename(project.id, name)}
                 autoFocus
                 fullWidth
               />
@@ -223,8 +250,7 @@ function ProjectCard({ project }: { project: any }) {
       </Link>
       <Menu anchorEl={anchor} open={!!anchor} onClose={close}>
         <MenuItem onClick={() => { setRenaming(true); close(); }}>Rename</MenuItem>
-        <MenuItem onClick={() => { navigator.clipboard?.writeText(JSON.stringify(project.files)); toast.success("Copied"); close(); }}>Copy code</MenuItem>
-        <MenuItem onClick={() => { remove(project.id); toast.success("Deleted"); close(); }} sx={{ color: "error.main" }}>Delete</MenuItem>
+        <MenuItem onClick={() => { remove(project.id); close(); }} sx={{ color: "error.main" }}>Delete</MenuItem>
       </Menu>
     </motion.div>
   );

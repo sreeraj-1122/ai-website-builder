@@ -113,7 +113,7 @@ function ProfileMenu({ compact = false }: { compact?: boolean }) {
     <>
       <button
         onClick={(e) => setAnchor(e.currentTarget)}
-        className={`flex items-center gap-2 rounded-full border bg-card/60 backdrop-blur hover:bg-muted transition-colors ${compact ? "w-full justify-start p-2" : "pl-1 pr-2 py-1"}`}
+        className={`flex items-center gap-2 rounded-full border bg-card/60 backdrop-blur hover:bg-muted transition-colors ${compact ? "w-full justify-start p-2" : "pl-1 pr-1 py-1"}`}
       >
         <Avatar src={user.image || user.avatar} sx={{ width: 30, height: 30 }} />
         {compact && (
@@ -191,7 +191,7 @@ function ProfileMenu({ compact = false }: { compact?: boolean }) {
           <LogOut size={16} /> Log out
         </MenuItem>
         <div className="px-4 pt-2 pb-3">
-          <Link to="/signup" onClick={() => setAnchor(null)}>
+          <Link to="/pricing" onClick={() => setAnchor(null)}>
             <Button fullWidth size="small" variant="contained" sx={{ background: "linear-gradient(135deg,#8b5cf6,#06b6d4)" }}>
               Upgrade plan
             </Button>

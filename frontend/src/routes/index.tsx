@@ -8,12 +8,13 @@ import {
   Monitor, Tablet, Smartphone, Check, MessageSquare, Github,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useProjects } from "@/lib/projects-store";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "GenWeb.ai — AI Website Builder" },
+      { title: "GenWeb.ai" },
       { name: "description", content: "Build modern websites instantly using AI prompts. Generate responsive, production-ready websites with live preview and editable code." },
       { property: "og:title", content: "GenWeb.ai — AI Website Builder" },
       { property: "og:description", content: "Turn ideas into beautiful websites in seconds. From prompt to production-ready." },
@@ -58,15 +59,26 @@ function useTypingPlaceholder() {
 
 function Landing() {
   const [prompt, setPrompt] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
   const typing = useTypingPlaceholder();
-  const create = useProjects((s) => s.create);
   const navigate = useNavigate();
 
-  const submit = (text?: string) => {
+  const submit = async (text?: string) => {
     const p = (text ?? prompt).trim();
-    if (!p) return;
-    const project = create(p);
-    navigate({ to: "/editor/$id", params: { id: project.id } });
+    if (!p || isGenerating) return;
+
+    setIsGenerating(true);
+    try {
+      const res = await api.post("/api/website/generate", { prompt: p });
+      const websiteId = res.data.website?._id || res.data.websiteId;
+      if (websiteId) {
+        navigate({ to: "/editor/$id", params: { id: websiteId } });
+      }
+    } catch {
+      toast.error("Generation failed");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -77,7 +89,7 @@ function Landing() {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 grid-bg pointer-events-none" />
         <div className="absolute inset-0 bg-hero pointer-events-none" />
-        <div className="relative mx-auto max-w-5xl px-6 pt-24 pb-20 text-center">
+        <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-20 text-center">
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <Chip
               icon={<Sparkles size={14} />}
@@ -121,14 +133,16 @@ function Landing() {
                   onKeyDown={(e) => e.key === "Enter" && submit()}
                   placeholder={typing + "▍"}
                   className="flex-1 bg-transparent outline-none text-base placeholder:text-muted-foreground"
+                  disabled={isGenerating}
                 />
                 <Button
                   onClick={() => submit()}
+                  disabled={isGenerating}
                   variant="contained"
                   endIcon={<ArrowRight size={16} />}
                   sx={{ background: "linear-gradient(135deg,#8b5cf6,#06b6d4)", boxShadow: "0 8px 24px -8px rgba(139,92,246,.5)" }}
                 >
-                  Start Building Free
+                  {isGenerating ? "Building..." : "Start Building Free"}
                 </Button>
               </div>
             </div>
@@ -160,7 +174,7 @@ function Landing() {
       {/* LOGOS */}
       <section className="border-y bg-surface">
         <div className="mx-auto max-w-7xl px-6 py-10 grid grid-cols-2 md:grid-cols-5 gap-6 items-center text-muted-foreground">
-          {["Acme", "Nimbus", "Vector", "Forge", "Lumen"].map((n) => (
+          {["Acme", "Nimbus", "Vector", "Forge", "GenWeb.ai"].map((n) => (
             <div key={n} className="text-center font-semibold tracking-tight opacity-70 hover:opacity-100 transition">{n}</div>
           ))}
         </div>
@@ -200,7 +214,7 @@ function Landing() {
             <SectionHeader
               eyebrow="AI Demo"
               title="Refine with a sentence."
-              subtitle="Chat directly with your project. Lumen edits the code, updates the preview, and explains what changed."
+              subtitle="Chat directly with your project. GenWeb.ai edits the code, updates the preview, and explains what changed."
               align="left"
             />
             <ul className="mt-8 space-y-3">
@@ -323,7 +337,7 @@ const FEATURES = [
 ];
 
 const TESTIMONIALS = [
-  { name: "Aria Chen", role: "Founder, Northbound", quote: "Lumen replaced our design phase. We shipped a landing page in 40 minutes that looked better than our last agency build.", color: "from-indigo-500 to-fuchsia-500" },
+  { name: "Aria Chen", role: "Founder, Northbound", quote: "GenWeb.ai replaced our design phase. We shipped a landing page in 40 minutes that looked better than our last agency build.", color: "from-indigo-500 to-fuchsia-500" },
   { name: "Marcus Hale", role: "Engineering Lead", quote: "The code is genuinely clean. I exported and dropped it straight into our repo with zero rewrites.", color: "from-amber-400 to-rose-500" },
   { name: "Priya Raman", role: "Indie Hacker", quote: "Feels like pairing with a senior designer who actually types fast.", color: "from-emerald-400 to-cyan-500" },
 ];
@@ -335,9 +349,9 @@ const PLANS = [
 ];
 
 const FAQ = [
-  { q: "How does Lumen generate websites?", a: "You describe the site, and our AI plans the structure, writes the code, and previews it live. You can refine via chat or edit the code directly." },
+  { q: "How does GenWeb.ai generate websites?", a: "You describe the site, and our AI plans the structure, writes the code, and previews it live. You can refine via chat or edit the code directly." },
   { q: "Do I own the code?", a: "Yes. Every project exports as a clean React + Vite codebase. There is no vendor lock-in." },
-  { q: "Can I deploy from Lumen?", a: "One-click deploy is available on Pro and Team plans, or export the ZIP and host anywhere." },
+  { q: "Can I deploy from GenWeb.ai?", a: "One-click deploy is available on Pro and Team plans, or export the ZIP and host anywhere." },
   { q: "Is there a free tier?", a: "Yes — the Starter plan is free forever and includes 10 generations per month." },
 ];
 
@@ -374,7 +388,33 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 
 function PreviewMock() {
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
-  const width = device === "desktop" ? "100%" : device === "tablet" ? 640 : 320;
+  const preview = {
+    desktop: {
+      width: "100%",
+      padding: "p-12",
+      title: "text-4xl",
+      copy: "text-sm",
+      buttons: "flex-row",
+      grid: "grid-cols-3",
+    },
+    tablet: {
+      width: 640,
+      padding: "p-8",
+      title: "text-3xl",
+      copy: "text-sm",
+      buttons: "flex-row",
+      grid: "grid-cols-3",
+    },
+    mobile: {
+      width: 320,
+      padding: "p-6",
+      title: "text-2xl",
+      copy: "text-xs",
+      buttons: "flex-col",
+      grid: "grid-cols-1",
+    },
+  }[device];
+
   return (
     <div className="rounded-2xl border bg-card shadow-elegant overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b bg-surface">
@@ -383,7 +423,7 @@ function PreviewMock() {
           <span className="w-3 h-3 rounded-full bg-yellow-400/70" />
           <span className="w-3 h-3 rounded-full bg-green-400/70" />
         </div>
-        <div className="text-xs text-muted-foreground glass px-3 py-1 rounded-md">lumen.app/preview</div>
+        <div className="text-xs text-muted-foreground glass px-3 py-1 rounded-md">GenWeb.ai/preview</div>
         <div className="flex gap-1">
           {[{ i: Monitor, k: "desktop" }, { i: Tablet, k: "tablet" }, { i: Smartphone, k: "mobile" }].map(({ i: Icon, k }) => (
             <button key={k} onClick={() => setDevice(k as any)} className={`p-1.5 rounded-md transition ${device === k ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted/50"}`}>
@@ -392,25 +432,25 @@ function PreviewMock() {
           ))}
         </div>
       </div>
-      <div className="bg-surface p-6 flex justify-center">
+      <div className={`bg-surface overflow-x-auto flex justify-center ${device === "desktop" ? "p-0" : "p-6"}`}>
         <motion.div
           layout
           transition={{ duration: 0.4, type: "spring", bounce: 0.15 }}
-          style={{ width }}
+          style={{ width: preview.width, maxWidth: "100%" }}
           className="rounded-xl overflow-hidden border bg-background shadow-soft floaty"
         >
           <div className="h-10 border-b flex items-center px-4 gap-3 text-xs text-muted-foreground">
             <Layers size={12} /> Generated preview
           </div>
-          <div className="p-8 md:p-14 bg-hero">
+          <div className={`${preview.padding} bg-hero`}>
             <div className="inline-block px-2.5 py-1 text-[10px] uppercase tracking-widest text-[color:var(--accent)] border border-[color:var(--accent)]/30 rounded-full">v1.0</div>
-            <div className="mt-4 text-2xl md:text-4xl font-bold tracking-tight leading-tight">Productivity, <span className="text-gradient">reimagined.</span></div>
-            <p className="mt-2 text-xs md:text-sm text-muted-foreground">Ship beautiful interfaces in minutes with AI that understands taste.</p>
-            <div className="mt-5 flex gap-2">
+            <div className={`mt-4 font-bold tracking-tight leading-tight ${preview.title}`}>Productivity, <span className="text-gradient">reimagined.</span></div>
+            <p className={`mt-2 text-muted-foreground ${preview.copy}`}>Ship beautiful interfaces in minutes with AI that understands taste.</p>
+            <div className={`mt-5 flex gap-2 ${preview.buttons}`}>
               <div className="px-3 py-1.5 rounded-md bg-brand text-white text-xs font-medium">Start free</div>
               <div className="px-3 py-1.5 rounded-md border text-xs">Watch demo</div>
             </div>
-            <div className="mt-6 grid grid-cols-3 gap-2">
+            <div className={`mt-6 grid gap-2 ${preview.grid}`}>
               {[1,2,3].map(i => <div key={i} className="h-16 rounded-lg border bg-card" />)}
             </div>
           </div>
