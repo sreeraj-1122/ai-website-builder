@@ -17,7 +17,7 @@ const port = process.env.PORT || 5000
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
-    origin: ["https://ai-website-builder-1-u0xm.onrender.com", "http://localhost:5174", "http://localhost:8080", "http://localhost:8081"],
+    origin: ["https://ai-website-builder-jet-five.vercel.app/", "http://localhost:5174", "http://localhost:8080", "http://localhost:8081"],
     credentials:true
 }))
 app.use("/api/auth", authRouter)
