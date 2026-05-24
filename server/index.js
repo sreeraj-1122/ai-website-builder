@@ -14,10 +14,19 @@ const app = express()
 
 app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), stripeWebhook)
 const port = process.env.PORT || 5000
+const allowedOrigins = [
+    "https://ai-website-builder-jet-five.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:8080",
+    "http://localhost:8081",
+    ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(",").map((origin) => origin.trim()) : []),
+]
+
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
-    origin: ["https://ai-website-builder-jet-five.vercel.app/", "http://localhost:5174", "http://localhost:8080", "http://localhost:8081"],
+    origin: allowedOrigins,
     credentials:true
 }))
 app.use("/api/auth", authRouter)
