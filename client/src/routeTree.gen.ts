@@ -8,20 +8,20 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root.tsx'
-import { Route as TemplatesRouteImport } from './routes/templates.tsx'
-import { Route as SignupRouteImport } from './routes/signup.tsx'
-import { Route as SettingsRouteImport } from './routes/settings.tsx'
-import { Route as ProjectsRouteImport } from './routes/projects.tsx'
-import { Route as ProfileRouteImport } from './routes/profile.tsx'
-import { Route as PricingRouteImport } from './routes/pricing.tsx'
-import { Route as LoginRouteImport } from './routes/login.tsx'
-import { Route as DashboardRouteImport } from './routes/dashboard.tsx'
-import { Route as BlogRouteImport } from './routes/blog.tsx'
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as TemplatesRouteImport } from './routes/templates'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as ProjectsRouteImport } from './routes/projects'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as BlogRouteImport } from './routes/blog'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as EditorIdRouteImport } from './routes/editor.$id.tsx'
-import { Route as BlogNewRouteImport } from './routes/blog.new.tsx'
-import { Route as BlogSlugRouteImport } from './routes/blog.$slug.tsx'
+import { Route as EditorIdRouteImport } from './routes/editor.$id'
+import { Route as BlogNewRouteImport } from './routes/blog.new'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 
 const TemplatesRoute = TemplatesRouteImport.update({
   id: '/templates',
